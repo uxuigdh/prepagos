@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora de prepagos</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Sora', system-ui, sans-serif;
+      background: #f4f6ff;
+      margin: 0;
+      padding: 16px;
+      color: #005E5C;
+    }
+
+    .card {
+      max-width: 480px;
+      margin: auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #3D57C7;
+      margin-bottom: 7px;
+      text-align: center;
+    }
+    .subtitle {
+      font-size: 16px;
+      font-weight: 400;
+      color: #3D57C7;
+      margin-top: -3px;
+      margin-bottom: 18px;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    label {
+      font-size: 14px;
+      margin-top: 14px;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 14px;
+      margin-top: 6px;
+      font-size: 15px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-family: 'Sora', sans-serif;
+    }
+
+    .error {
+      font-size: 13px;
+      color: #c0392b;
+      margin-top: 6px;
+      display: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Sora', sans-serif;
+    }
+
+    .btn-primary {
+      background: #3D57C7;
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #bfd088;
+      color: #003b3a;
+      margin-top: 12px;
+    }
+
+    .result {
+      margin-top: 22px;
+      background: rgba(194,173,255,.25);
+      padding: 18px;
+      border-radius: 14px;
+      display: none;
+    }
+
+    .highlight {
+      font-size: 22px;
+      font-weight: 700;
+      color: #3D57C7;
+      margin: 6px 0 6px 10px; /* arriba | derecha | abajo | izquierda */
+    }
+
+    .highlight.no-corresponde {
+      color: #9ca3af; /* gris suave */
+      font-weight: 500;
+    }
+    
+    .message {
+      margin-top: 14px;
+      padding: 14px;
+      background: #ffffff;
+      border: 2px dashed #3D57C7;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .copied {
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+      font-weight: 700;
+    }
+
+   .tooltip {
+     position: relative;
+     display: inline-block;
+     margin-left: 8px;
+     cursor: pointer;
+     font-size: 10px;
+  }
+
+   .tooltip-icon {
+     color: #3D57C7;
+     font-weight: 700;
+  }
+
+    .tooltip-text {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      bottom: 130%;
+      left: 0;
+      background: #ffffff;
+      color: #3C3C3C;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 11px;
+      width: 240px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.15);
+      transition: opacity 0.5s ease;
+      z-index: 10;
+  }
+
+  /* Mostrar tooltip en desktop y mobile */
+    .tooltip:hover .tooltip-text,
+    .tooltip:active .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+  }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>CALCULADORA DE PREPAGOS</h1>
+  <p class="subtitle">Proporcionales y fechas de cobro</p>
+
+<label>
+  📅 Fecha de alta
+  <span class="tooltip">
+    <span class="tooltip-icon">ℹ️</span>
+    <span class="tooltip-text">
+      Dentro de las 24hs desde la confirmación del mail de verificación.
+    </span>
+  </span>
+</label>
+<input type="date" id="fecha">
+
+  <label>💳 Medio de pago</label>
+  <select id="medio">
+    <option value="">Seleccionar</option>
+    <option value="tarjeta">Tarjeta de crédito</option>
+    <option value="cbu">CBU</option>
+  </select>
+
+  <label>💰 Cuota mensual
+    <span class="tooltip">
+    <span class="tooltip-icon">ℹ️</span>
+    <span class="tooltip-text">
+      Diferencia a pagar informada en la cotización.
+    </span>
+  </span>
+  <input type="number" id="cuota" placeholder="Ej: 45000">
+  <div class="error" id="errorCuota">Por favor, ingresá el valor de la cuota mensual.</div>
+  
+
+  <button class="btn-primary" onclick="calcular()">Calcular</button>
+
+  <div class="result" id="resultado">
+    <div>📅 Fecha de activación: <strong id="inicio"></strong></div>
+    <div>💵 Monto proporcional:</span>
+    <div class="highlight" id="proporcional"></div>
+    <div class="message" id="mensaje"></div>
+
+    <button class="btn-secondary" onclick="copiarMensaje()">📋 Copiar mensaje</button>
+    <div class="copied" id="copiado">Mensaje copiado ✔</div>
+  </div>
+</div>
+
+<script>
+function calcular() {
+  const fechaInput = document.getElementById("fecha").value;
+  const medio = document.getElementById("medio").value;
+  const cuotaInput = document.getElementById("cuota");
+  const cuota = parseFloat(cuotaInput.value);
+
+  document.getElementById("errorCuota").style.display = cuota ? "none" : "block";
+  if (!fechaInput || !medio || !cuota) return;
+
+  const fechaAlta = new Date(fechaInput + "T00:00:00");
+  const dia = fechaAlta.getDate();
+  const mes = fechaAlta.getMonth();
+  const anio = fechaAlta.getFullYear();
+
+  let fechaActivacion = new Date(fechaAlta);
+  let proporcional = 0;
+  let mensaje = "";
+
+  if (dia >= 16 && dia <= 19) {
+    fechaActivacion = new Date(anio, mes, 20);
+    mensaje =
+      `La cobertura se activará el ${fechaActivacion.toLocaleDateString()}. ` +
+      `No se cobra monto proporcional. La primera cuota completa se facturará el mes siguiente.`;
+  } 
+  else if (dia >= 20) {
+    mensaje =
+      `La cobertura se activará el ${fechaAlta.toLocaleDateString()}. ` +
+      `No se cobra monto proporcional. La primera cuota completa se facturará el mes siguiente.`;
+  } 
+  else {
+    const diasMes = new Date(anio, mes + 1, 0).getDate();
+    const diasActivos = diasMes - dia;
+    proporcional = Math.round(cuota * (diasActivos / diasMes));
+
+    if (medio === "tarjeta") {
+    mensaje =
+      `La cobertura se activa el ${fechaAlta.toLocaleDateString()}. ` +
+      `El monto proporcional de la cuota es de $${proporcional}. ` +
+      `El débito se enviará antes del día 20 del mes en curso y se abonará al vencimiento del resumen de la tarjeta.`;
+    } else {
+      mensaje =
+        `La cobertura se activa el ${fechaAlta.toLocaleDateString()}. ` +
+        `El monto proporcional es de $${proporcional} y se debitará junto con la cuota total el día 5 (aprox.) del mes siguiente.`;
+    }
+  }
+
+  document.getElementById("inicio").innerText = fechaActivacion.toLocaleDateString();
+  
+  const proporcionalEl = document.getElementById("proporcional");
+
+    if (proporcional > 0) {
+      proporcionalEl.innerText = `$${proporcional}`;
+      proporcionalEl.classList.remove("no-corresponde");
+    } else {
+      proporcionalEl.innerText = "No corresponde";
+      proporcionalEl.classList.add("no-corresponde");
+    }
+  document.getElementById("mensaje").innerText = mensaje;
+
+  document.getElementById("resultado").style.display = "block";
+  document.getElementById("copiado").style.display = "none";
+}
+
+function copiarMensaje() {
+  navigator.clipboard.writeText(document.getElementById("mensaje").innerText);
+  document.getElementById("copiado").style.display = "block";
+}
+</script>
+
+</body>
+</html>
